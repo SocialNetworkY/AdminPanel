@@ -1,18 +1,26 @@
-﻿using System.Net.Http;
+﻿using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using AdminPanel.Views;
 
 namespace AdminPanel.Services;
 
 public class TokenService {
     private readonly HttpClient _httpClient;
-    private string _accessToken = string.Empty;
-    private string _refreshToken = string.Empty;
+    private readonly CookieContainer _cookieContainer = new();
+    private string? _accessToken = string.Empty;
     private readonly SemaphoreSlim _mutex = new(1, 1);
     
     public TokenService(HttpClient httpClient) {
-        _httpClient = httpClient;
+        var handler = new HttpClientHandler {
+            CookieContainer = _cookieContainer,
+            UseCookies = true,
+            UseDefaultCredentials = false,
+            AllowAutoRedirect = false
+        };
+        _httpClient = new HttpClient(handler) {
+            BaseAddress = httpClient.BaseAddress
+        };
     }
     
     public AuthenticationHeaderValue AuthorizationHeader => new("Bearer", _accessToken);
@@ -26,8 +34,7 @@ public class TokenService {
             }
             
             var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
-            _accessToken = tokenResponse!.AccessToken;
-            _refreshToken = tokenResponse.RefreshToken;
+            _accessToken = tokenResponse!.Token;
             return true;
         } finally {
             _mutex.Release();
@@ -38,14 +45,13 @@ public class TokenService {
     public async Task<bool> RefreshAsync() {
         await _mutex.WaitAsync();
         try {
-            var response = await _httpClient.PostAsJsonAsync("/auth/api/v1/refresh", new { _refreshToken });
+            var response = await _httpClient.PostAsync("/auth/api/v1/refresh", null);
             if (!response.IsSuccessStatusCode) {
                 return false;
             }
             
             var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
-            _accessToken = tokenResponse!.AccessToken;
-            _refreshToken = tokenResponse.RefreshToken;
+            _accessToken = tokenResponse!.Token;
             return true;
         } finally {
             _mutex.Release();
@@ -59,6 +65,5 @@ public class TokenService {
 }
 
 public class TokenResponse {
-    public string AccessToken { get; set; }
-    public string RefreshToken { get; set; }
+    public string? Token { get; set; }
 }
