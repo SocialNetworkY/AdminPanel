@@ -11,8 +11,7 @@ public class LoginViewModel: ViewModelBase
     private readonly UserService _userService;
     private readonly NavigationService _navigationService;
     private string _login = String.Empty;
-    private string _password = String.Empty;
-    public ICommand LoginCommand => new RelayCommand(async () => await LoginAsync());
+    private bool _isLoggingIn;
     
     public LoginViewModel(UserService userService, NavigationService navigationService) {
         _userService = userService;
@@ -25,25 +24,47 @@ public class LoginViewModel: ViewModelBase
             OnPropertyChanged(nameof(Login));
         }
     }
-
-    public string Password {
-        get => _password;
+    
+    public bool IsLoggingIn {
+        get => _isLoggingIn;
         set {
-            _password = value;
-            OnPropertyChanged(nameof(Password));
+            _isLoggingIn = value;
+            OnPropertyChanged(nameof(IsLoggingIn));
+            OnPropertyChanged(nameof(IsLoginEnabled));
         }
     }
+    
+    public bool IsLoginEnabled => !IsLoggingIn;
 
-    private async Task LoginAsync() {
-        if (string.IsNullOrEmpty(Login) || string.IsNullOrEmpty(Password)) {
+    public async Task LoginAsync(string password) {
+        if (string.IsNullOrEmpty(Login) || string.IsNullOrEmpty(password)) {
             MessageBox.Show("Login and password are required");
             return;
         }
-        if (!await _userService.LoginAsync(Login, Password)) {
-            MessageBox.Show("Invalid login or password");
-            return;
+        
+        IsLoggingIn = true;
+        try {
+            if (!await _userService.LoginAsync(Login, password)) {
+                MessageBox.Show("Invalid login or password");
+                return;
+            }
+        
+            var user = await _userService.GetFullUserInfoAsync(await _userService.GetMyIdAsync());
+            if (user == null) {
+                MessageBox.Show("Failed to get user info");
+                return;
+            }
+
+            if (!user.IsAdmin) {
+                MessageBox.Show("You are not an admin");
+                return;
+            }
+        
+            MessageBox.Show($"Login successful as {user.Username}");
+            _navigationService.Navigate(new MainUserControl());
         }
-        MessageBox.Show("Login successful");
-        _navigationService.Navigate(new MainUserControl());
+        finally {
+            IsLoggingIn = false;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 using AdminPanel.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,5 +11,11 @@ public partial class LoginUserControl : UserControl
     {
         InitializeComponent();
         DataContext = App.Services.GetRequiredService<LoginViewModel>();
+    }
+
+    private async void LoginBtn_OnClick(object sender, RoutedEventArgs e) {
+        if (DataContext is LoginViewModel viewModel) {
+            await viewModel.LoginAsync(PasswordBox.Password);
+        }
     }
 }

@@ -38,20 +38,20 @@
                        Text="Password"
                        Margin="0,15"
                        HorizontalAlignment="Left"/>
-            <TextBox Grid.Row="3"
-                     Text="{Binding Password}"
-                     Padding="0.5"
-                     Width="255"
-                     HorizontalAlignment="Left"/>
+            <PasswordBox Grid.Row="3"
+                         x:Name="PasswordBox"
+                         Padding="0.5"
+                         Width="255"
+                         HorizontalAlignment="Left"/>
         </Grid>
-        <Button x:Name="LoginBtn"
-                Content="Login"
+        <Button Content="Login"
                 Foreground="White"
                 Background="Black"
                 Width="100"
                 Height="30"
                 Margin="0,20"
                 HorizontalAlignment="Center"
-                Command="{Binding LoginCommand}"/>
+                Click="LoginBtn_OnClick"
+                IsEnabled="{Binding IsLoginEnabled}"/>
     </StackPanel>
 </UserControl>
