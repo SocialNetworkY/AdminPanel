@@ -10,7 +10,6 @@ public partial class LoginUserControl : UserControl
     public LoginUserControl()
     {
         InitializeComponent();
-        DataContext = App.Services.GetRequiredService<LoginViewModel>();
     }
 
     private async void LoginBtn_OnClick(object sender, RoutedEventArgs e) {
