@@ -1,12 +1,23 @@
-﻿namespace AdminPanel.Models;
+﻿using System.Text.Json.Serialization;
 
-public class User
-{
+namespace AdminPanel.Models;
+
+public class User {
     public uint Id { get; set; }
     public string Username { get; set; }
     public string Email { get; set; }
-    public uint Role { get; set; }
-    public bool IsAdmin => Role > 0;
+    public string Nickname { get; set; }
+    public string Avatar { get; set; }
+    public UserRole Role { get; set; }
+    public bool IsAdmin => Role != UserRole.User;
+    [JsonPropertyName("banned")]
     public bool IsBanned { get; set; }
-    
+    public Ban? ActiveBan { get; set; }
+}
+
+public enum UserRole {
+    User = 0,
+    AdminLvl1 = 1,
+    AdminLvl2 = 2,
+    AdminLvl3 = 3
 }
