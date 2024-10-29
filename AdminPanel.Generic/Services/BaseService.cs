@@ -1,33 +1,29 @@
 ﻿using System.Net;
 using System.Net.Http;
 
-namespace AdminPanel.Services;
+namespace AdminPanel.Generic.Services;
 
-public abstract class BaseService {
-    private readonly HttpClient _httpClient;
-    protected readonly TokenService _tokenService;
-
-    protected BaseService(HttpClient httpClient, TokenService tokenService) {
-        _httpClient = httpClient;
-        _tokenService = tokenService;
-    }
-    
+public abstract class BaseService(HttpClient httpClient, ISessionManager sessionManager) {
     protected async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request, uint attempts = 2, HttpResponseMessage? lastResponse = null) {
         if (attempts == 0) {
             return lastResponse!;
         }
         
-        await _tokenService.WaitReadyAsync();
-        request.Headers.Authorization = _tokenService.AuthorizationHeader;
-        var response = await _httpClient.SendAsync(request);
+        await sessionManager.WaitReadyAsync();
+        request.Headers.Authorization = sessionManager.AuthorizationHeader;
+        var response = await httpClient.SendAsync(request);
         
         if (response.IsSuccessStatusCode) {
             return response;
         }
 
         if (response.StatusCode == HttpStatusCode.Unauthorized) {
-            if (!await _tokenService.RefreshAsync()) {
-                throw new Exception("Failed to Authenticate");
+            if (!sessionManager.IsBusy) {
+                if (!await sessionManager.RefreshAsync()) {
+                    throw new Exception("Failed to Authenticate");
+                }
+            } else {
+                await sessionManager.WaitReadyAsync();
             }
             attempts += 1;
         }

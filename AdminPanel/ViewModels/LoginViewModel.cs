@@ -1,22 +1,17 @@
 ﻿using System.Windows;
 using System.Windows.Input;
+using AdminPanel.Generic.Services;
+using AdminPanel.Generic.ViewModels;
 using AdminPanel.Models;
 using AdminPanel.Services;
 using AdminPanel.Views;
 
 namespace AdminPanel.ViewModels;
 
-public class LoginViewModel: ViewModelBase
-{
-    private readonly UserService _userService;
-    private readonly NavigationService _navigationService;
+public class LoginViewModel(AuthService authService, UserService userService, NavigationService navigationService) : ViewModelBase {
     private string _login = String.Empty;
     private bool _isLoggingIn;
-    
-    public LoginViewModel(UserService userService, NavigationService navigationService) {
-        _userService = userService;
-        _navigationService = navigationService;
-    }
+
     public string Login {
         get => _login;
         set {
@@ -44,12 +39,12 @@ public class LoginViewModel: ViewModelBase
         
         IsLoggingIn = true;
         try {
-            if (!await _userService.LoginAsync(Login, password)) {
+            if (!await authService.LoginAsync(Login, password)) {
                 MessageBox.Show("Invalid login or password");
                 return;
             }
         
-            var user = await _userService.GetFullUserInfoAsync(await _userService.GetMyIdAsync());
+            var user = await userService.GetFullUserInfoAsync(await userService.GetMyIdAsync());
             if (user == null) {
                 MessageBox.Show("Failed to get user info");
                 return;
@@ -61,7 +56,7 @@ public class LoginViewModel: ViewModelBase
             }
         
             MessageBox.Show($"Login successful as {user.Username}");
-            _navigationService.Navigate(new MainUserControl());
+            navigationService.Navigate(new MainUserControl());
         }
         finally {
             IsLoggingIn = false;

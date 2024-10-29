@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace AdminPanel.ViewModels;
+namespace AdminPanel.Generic.ViewModels;
 
 public class ViewModelBase : INotifyPropertyChanged {
     public event PropertyChangedEventHandler? PropertyChanged;

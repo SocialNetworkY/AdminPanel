@@ -7,11 +7,11 @@ public class Post {
     uint UserId { get; set; }
     string Title { get; set; }
     string Content { get; set; }
-    List<Tag> Tags { get; set; }
+    List<Tag> Tags { get; set; } = new();
     uint TagsAmount { get; set; }
-    List<Comment> Comments { get; set; }
+    List<Comment> Comments { get; set; } = new();
     uint CommentsAmount { get; set; }
-    List<Like> Likes { get; set; }
+    List<Like> Likes { get; set; } = new();
     uint LikesAmount { get; set; }
     DateTime PostedAt { get; set; }
     [JsonPropertyName("edited")]

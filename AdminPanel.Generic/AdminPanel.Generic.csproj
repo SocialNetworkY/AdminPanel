@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <UseWPF>true</UseWPF>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>$(AssemblyName)</PackageId>
+    </PropertyGroup>
+
+</Project>
