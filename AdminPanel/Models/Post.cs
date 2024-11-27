@@ -19,3 +19,9 @@ public class Post {
     uint EditedBy { get; set; }
     DateTime EditedAt { get; set; }
 }
+
+public class PostsStatistic {
+    public uint Total { get; set; }
+    public uint Edited { get; set; }
+    public uint Likes { get; set; }
+}

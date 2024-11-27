@@ -51,5 +51,6 @@
                 HorizontalAlignment="Center"
                 Click="LoginBtn_OnClick"
                 IsEnabled="{Binding IsLoginEnabled}"/>
+        <TextBlock HorizontalAlignment="Center" Text="{Binding ErrMessage}"/>
     </StackPanel>
 </UserControl>

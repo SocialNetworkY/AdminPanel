@@ -33,3 +33,10 @@ public struct ReportStatus {
         return status == Pending || status == Answered || status == Rejected;
     }
 }
+
+public class ReportsStatistic {
+    public uint Total { get; set; }
+    public uint Pending { get; set; }
+    public uint Answered { get; set; }
+    public uint Rejected { get; set; }
+}

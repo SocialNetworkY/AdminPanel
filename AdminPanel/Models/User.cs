@@ -15,6 +15,13 @@ public class User {
     public Ban? ActiveBan { get; set; }
 }
 
+public class UsersStatistic {
+    public uint Total { get; set; }
+    public uint Admin { get; set; }
+    public uint Banned { get; set; }
+    public uint Active { get; set; }
+}
+
 public enum UserRole {
     User = 0,
     AdminLvl1 = 1,

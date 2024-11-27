@@ -4,18 +4,32 @@ using AdminPanel.Generic.Services;
 
 namespace AdminPanel.Services;
 
-public class AuthService(HttpClient httpClient, ISessionSetter sessionManager) {
+public class AuthService(HttpClient httpClient, ISessionSetter sessionSetter, ISessionManager sessionManager) : BaseService(httpClient, sessionManager)  {
+    private readonly HttpClient _httpClient = httpClient;
+
     public async Task<bool> LoginAsync(string login, string password) {
-        var response = await httpClient.PostAsJsonAsync("/auth/api/v1/login", new { login, password });
+        var response = await _httpClient.PostAsJsonAsync("/auth/api/v1/login", new { login, password });
         if (!response.IsSuccessStatusCode) {
             return false;
         }
         var responseData = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-        await sessionManager.SetAccessTokenAsync(responseData!["token"]);
+        await sessionSetter.SetAccessTokenAsync(responseData!["token"]);
         
         foreach (var cookieHeader in response.Headers.GetValues("Set-Cookie")) {
-            await sessionManager.SetCookieAsync(cookieHeader);
+            await sessionSetter.SetCookieAsync(cookieHeader);
         }
         return true;
+    }
+
+    public async Task<bool> IsAuthenticated() {
+        try {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/auth/api/v1/authenticate");
+            var response = await SendRequestAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception e) {
+            Console.WriteLine(e);
+            return false;
+        }
     }
 }

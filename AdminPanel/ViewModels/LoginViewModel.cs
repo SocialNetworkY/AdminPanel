@@ -5,12 +5,14 @@ using AdminPanel.Generic.ViewModels;
 using AdminPanel.Models;
 using AdminPanel.Services;
 using AdminPanel.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AdminPanel.ViewModels;
 
-public class LoginViewModel(AuthService authService, UserService userService, NavigationService navigationService) : ViewModelBase {
+public class LoginViewModel(AuthService authService, UserService userService, NavigationService navigationService, MainUserControl mainUserControl) : ViewModelBase {
     private string _login = String.Empty;
     private bool _isLoggingIn;
+    private string _errMessage = String.Empty;
 
     public string Login {
         get => _login;
@@ -28,35 +30,48 @@ public class LoginViewModel(AuthService authService, UserService userService, Na
             OnPropertyChanged(nameof(IsLoginEnabled));
         }
     }
-    
+
+    public string ErrMessage {
+        get => _errMessage;
+         set {
+             _errMessage = value;
+             OnPropertyChanged(nameof(ErrMessage));
+         }
+    }
+
     public bool IsLoginEnabled => !IsLoggingIn;
 
     public async Task LoginAsync(string password) {
+        ErrMessage = "";
         if (string.IsNullOrEmpty(Login) || string.IsNullOrEmpty(password)) {
-            MessageBox.Show("Login and password are required");
+            ErrMessage = "Login and password are required";
             return;
         }
         
         IsLoggingIn = true;
         try {
             if (!await authService.LoginAsync(Login, password)) {
-                MessageBox.Show("Invalid login or password");
+                ErrMessage = "Invalid login or password";
                 return;
             }
-        
+
             var user = await userService.GetFullUserInfoAsync(await userService.GetMyIdAsync());
             if (user == null) {
-                MessageBox.Show("Failed to get user info");
+                ErrMessage = "Failed to get user info";
                 return;
             }
 
             if (!user.IsAdmin) {
-                MessageBox.Show("You are not an admin");
+                ErrMessage = "You are not an admin";
                 return;
             }
-        
-            MessageBox.Show($"Login successful as {user.Username}");
-            navigationService.Navigate(new MainUserControl());
+
+            ErrMessage = $"Login successful as {user.Username}";
+            await Task.Delay(2000);
+            navigationService.Navigate(mainUserControl);
+        }
+        catch (Exception ex) {
+            ErrMessage = $"Error: {ex.Message}";
         }
         finally {
             IsLoggingIn = false;
